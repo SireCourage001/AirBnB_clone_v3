@@ -9,6 +9,9 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from models import storage
 from api.v1.views import app_views
+from flasgger import Swagger
+from flasgger.utils import swag_from
+
 
 app = Flask(__name__)
 
@@ -20,6 +23,11 @@ app.url_map.strict_slashes = False
 
 
 @app.teardown_appcontext
+def close_db(error):
+    """ Close Storage """
+    storage.close()
+
+
 def teardown_appcontext(exception):
     '''
     Removes the current SQLAlchemy Session object after each request.
@@ -32,6 +40,13 @@ def teardown_appcontext(exception):
 def not_found(error):
     '''Return errmsg `Not Found`.'''
     return jsonify(error='Not found'), 404
+
+app.config['SWAGGER'] = {
+    'title': 'AirBnB clone Restful API',
+    'uiversion': 3
+}
+
+Swagger(app)
 
 
 if __name__ == '__main__':
